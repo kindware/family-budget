@@ -17,4 +17,5 @@ Then the site is live at https://kindware.github.io/family-budget/
 
 - The encrypted page requires the password to decrypt **in the browser**.
 - Regenerating with a new password invalidates the old one.
-- Keep this repo PRIVATE.
+- This repo is public, but it only ever contains the encrypted page -
+  the encryption is the protection. Use a strong password.
