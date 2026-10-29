@@ -30,6 +30,10 @@ header p{margin:5px 0 0;font-size:12.5px;color:#c9d4ea}
 .action.hot{background:#fdecec;border-color:#f3c1c1;color:var(--red)}
 table{border-collapse:collapse;width:100%;font-size:12.5px}
 th{background:var(--navy);color:#fff;text-align:left;padding:7px 8px;font-weight:600;position:sticky;top:0;z-index:2;white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{background:#2a4a7f}
+th.sortable .arrow{opacity:.45;font-size:10px;margin-left:3px}
+th.sortable.active .arrow{opacity:1}
 td{padding:6px 8px;border-bottom:1px solid #eef1f7;vertical-align:top}
 tr:nth-child(even) td{background:#f8fAfd}
 td a{color:var(--blue);text-decoration:none;font-weight:600}
@@ -79,7 +83,7 @@ footer{max-width:1280px;margin:20px auto 40px;padding:0 18px;font-size:11.5px;co
     <button class="pillbtn primary" onclick="openEdit()">+ Add job</button>
     <div class="chips" id="personChips"></div>
     <select id="fStatus" class="pillbtn" style="padding:8px 10px"><option value="">All statuses</option><option value="found">Found</option><option value="interested">Interested</option><option value="applied">Applied</option><option value="interview">Interview</option><option value="offer">Offer</option><option value="rejected">Rejected</option><option value="skipped">Skipped</option></select>
-    <select id="fSort" class="pillbtn" style="padding:8px 10px"><option value="applied">Sort: newest applied</option><option value="followup">Sort: follow-up due</option><option value="fit">Sort: best fit</option><option value="updated">Sort: recently updated</option></select>
+    <select id="fSort" class="pillbtn" style="padding:8px 10px"><option value="applied:desc">Sort: newest applied</option><option value="applied:asc">Sort: oldest applied</option><option value="pay:desc">Sort: highest pay</option><option value="pay:asc">Sort: lowest pay</option><option value="fit:desc">Sort: best fit</option><option value="fit:asc">Sort: lowest fit</option><option value="followup:asc">Sort: follow-up due</option><option value="updated:desc">Sort: recently updated</option></select>
     <input id="fQ" class="pillbtn" style="padding:8px 12px;min-width:190px" placeholder="Search company, title, notes...">
     <span style="flex:1"></span>
     <button class="pillbtn" onclick="importJson()">Import AI JSON</button>
@@ -146,15 +150,52 @@ const SEED = [
  {person:'Avery',company:'PII / Jabil',title:'Chemist',reqId:'',location:'Hunt Valley, MD (25 miles)',url:'https://careers.jabil.com/',source:'LinkedIn/Indeed',payRange:'$70,242-$123,800',targetPay:'$85K-$90K',fit:8,status:'found',notes:'June 2026 batch - verify still open. Pay floor is an $8K raise.'},
  {person:'Avery',company:'Bora Pharmaceutical',title:'QC Microbiology Analyst I',reqId:'',location:'Baltimore, MD - Camden (8 miles)',url:'',source:'Glassdoor/LinkedIn',payRange:'$60,000-$75,000',targetPay:'$70-75K (push Analyst II)',fit:7,status:'found',notes:'June 2026 batch - verify. BS Biology perfect match; overqualified on paper.'},
  {person:'Avery',company:'Patient First',title:'Medical Technologist / MLT',reqId:'',location:'Towson, MD (15 miles)',url:'',source:'Indeed',payRange:'$31.50-$35.50/hr',targetPay:'$35-37/hr',fit:6,status:'found',notes:'June 2026 batch - verify. ASCP preferred not required.'},
- {person:'Avery',company:'GSK',title:'Process & Analytical Sciences Lab Technician',reqId:'',location:'Rockville, MD (38 miles)',url:'https://www.gsk.com/en-gb/careers/',source:'Company site',payRange:'$86,625-$144,375 + bonus + stock',targetPay:'$90-100K',fit:7.5,status:'found',notes:'June 2026 batch - verify. Big pharma; midpoint nearly doubles current pay.'}
+  {person:'Avery',company:'GSK',title:'Process & Analytical Sciences Lab Technician',reqId:'',location:'Rockville, MD (38 miles)',url:'https://www.gsk.com/en-gb/careers/',source:'Company site',payRange:'$86,625-$144,375 + bonus + stock',targetPay:'$90-100K',fit:7.5,status:'found',notes:'June 2026 batch - verify. Big pharma; midpoint nearly doubles current pay.'},
+  /* ---- Mike: active pipeline ---- */
+  {person:'Mike',company:'MedBridge / Pivotal Health',title:'Clinical Sleep Navigator',reqId:'jt-4nogzqd537',location:'Baltimore, MD - remote/hybrid',url:'https://www.jobtarget.com/jobs/jt-4nogzqd537/clinical-sleep-navigator-baltimore-maryland',source:'JobTarget',payRange:'$36-$40/hr',targetPay:'$38/hr',fit:9,status:'interview',appliedDate:'2026-10-23',followUp:'2026-11-02',contactName:'Brenda Underwood',notes:'Phone interview 10/28 went well. Possible regional-manager interview next week; video interview 11/2. Confirm 25 guaranteed hours, benefits, start date. Do not raise Erin/prior history.',package:'25 hrs/week, $38/hr accepted; confirm paid hours, benefits eligibility, flexibility, start date.'},
+  {person:'Mike',company:'Johns Hopkins University',title:'Patient Service Coordinator / MA (Neurology)',reqId:'122532',location:'Baltimore, MD',url:'https://hiring.jhu.edu/careers/',source:'JHU Careers',payRange:'Not posted',targetPay:'$55K-$65K',fit:6,status:'applied',appliedDate:'2026-10-23',followUp:'2026-11-03',notes:'Application Received 10/23. Day-shift healthcare admin backup.'},
+  {person:'Mike',company:'Chesapeake Employers Insurance',title:'IME Coordinator',reqId:'1077',location:'Towson, MD',url:'https://jobs.dayforcehcm.com/ceiwc/CANDIDATEPORTAL/jobs/1077/apply/manualApplication',source:'Dayforce',payRange:'$58K',targetPay:'$58K',fit:7.5,status:'applied',appliedDate:'2026-10-24',followUp:'2026-11-03',notes:'Submitted 10/24; confirmation OUHtyeFC. Local, day shift, claims-adjacent.'},
+  {person:'Mike',company:'Cardinal Health',title:'Coordinator, Credentialing',reqId:'20189413',location:'Baltimore, MD / hybrid',url:'https://cardinalhealth.wd1.myworkdayjobs.com',source:'Workday',payRange:'Not posted',targetPay:'$60K',fit:6.5,status:'applied',appliedDate:'2026-10-20',followUp:'2026-11-03',notes:'In Progress. Credentialing/admin backup.'},
+  {person:'Mike',company:'VA Maryland Health Care System',title:'Medical Support Assistant (MSA)',reqId:'870448700 / 888068300',location:'Baltimore, MD',url:'https://www.usajobs.gov',source:'USAJOBS',payRange:'GS-6',targetPay:'$55K',fit:6,status:'applied',appliedDate:'2026-10-16',followUp:'2026-11-03',notes:'Two MSA applications submitted; status Received. Assessments may be required.'},
+  {person:'Mike',company:'Amazon',title:'Security & Loss Prevention Expert (SLP)',reqId:'10521740',location:'Baltimore, MD',url:'https://www.amazon.jobs',source:'Amazon Jobs',payRange:'Not posted',targetPay:'$55K',fit:5.5,status:'applied',appliedDate:'2026-10-07',followUp:'2026-11-03',notes:'Submitted 10/7; assessment required. Older lead, low priority.'},
+  {person:'Mike',company:'Maryland Department of Health',title:'Board of Nursing Special Investigator',reqId:'',location:'Baltimore, MD',url:'https://www.jobapscloud.com/MD/',source:'Maryland JobAps',payRange:'Not posted',targetPay:'$60K',fit:5,status:'applied',appliedDate:'2026-08-03',followUp:'2026-11-03',notes:'Submitted 8/3; not rated. Older application.'},
+  {person:'Mike',company:'Sedgwick',title:'WC Claims Examiner - MD',reqId:'R79491',location:'Remote / hybrid',url:'https://sedgwick.wd1.myworkdayjobs.com/en-US/Sedgwick',source:'Workday',payRange:'Not posted',targetPay:'$55K',fit:4,status:'rejected',appliedDate:'2026-10-24',followUp:'',notes:'Rejected 10/27. Hard screen: 0 years adjusting claims / no adjuster license. Do not reapply.'},
+  {person:'Mike',company:'SNAP Diagnostics',title:'Sleep Scoring Tech / Analyst',reqId:'jt-ez2j86ykgb',location:'Remote - Vernon Hills, IL',url:'https://www.jobtarget.com/jobs/jt-ez2j86ykgb/sleep-scoring-techanalyst-vernon-hills-illinois',source:'Email',payRange:'$46K-$95K',targetPay:'$65K',fit:8.5,status:'applied',appliedDate:'2026-10-28',followUp:'2026-11-03',contactEmail:'apply@snapdiagnostics.com',notes:'Email sent 10/28. Listing is old (6/1/26); confirm active. Full-time 8 hrs/day; paid remote training; no years requirement listed.',package:'Ask: PRN/part-time availability, training, license reimbursement, benefits.'},
+  {person:'Mike',company:'SleepScore LLC',title:'Remote Sleep Scoring / Training Inquiry',reqId:'',location:'Remote',url:'https://sleepscore.net/',source:'Email',payRange:'Not posted',targetPay:'$60K',fit:7,status:'applied',appliedDate:'2026-10-28',followUp:'2026-11-03',contactEmail:'info@sleepscore.org',notes:'Cold email sent 10/28 asking about contract/PRN scoring or a training path.'},
+  {person:'Mike',company:'AASM',title:'Autoscoring Gold Standard Panel',reqId:'aigsp',location:'Remote - US',url:'https://aasm.org/apply-autoscoring-program-gold-standard-panel/',source:'Email',payRange:'Per study',targetPay:'$60K equivalent',fit:8,status:'applied',appliedDate:'2026-10-28',followUp:'2026-11-10',contactEmail:'aigsp@aasm.org',notes:'Email sent 10/28 asking about next cycle and Sleep ISR eligibility. ~10 hrs/week; 150 PSGs; early-career RPSGT; active Sleep ISR required.'},
+  {person:'Mike',company:'ScoringHelpers LLC',title:'PRN / 1099 Remote Sleep Scorer',reqId:'',location:'Remote',url:'https://scoringhelpers.com',source:'Email',payRange:'Not posted',targetPay:'$60K',fit:7,status:'applied',appliedDate:'2026-10-28',followUp:'2026-11-03',contactEmail:'info@scoringhelpers.com',notes:'Cold email sent 10/28 asking about PRN/1099 scoring and training.'},
+  {person:'Mike',company:'Sleep 360',title:'Registered Polysomnographic Technologist - PRN',reqId:'',location:'Maryland - possibly on-site',url:'https://www.sleep360md.com/careers',source:'Email',payRange:'Not posted',targetPay:'$60K',fit:8,status:'applied',appliedDate:'2026-10-28',followUp:'2026-11-03',contactEmail:'info@sleep360md.com',notes:'Email sent 10/28. Careers page offers FT/PT/PRN and Somnostar training; asked whether PRN scoring can be remote.'},
+  {person:'Mike',company:'MySleepScoring',title:'Remote Sleep Scorer (1099)',reqId:'',location:'Remote - US',url:'https://mysleepscoring.com/join-our-team/',source:'Email',payRange:'Per study',targetPay:'$60K',fit:6.5,status:'applied',appliedDate:'2026-10-28',followUp:'2026-11-03',contactEmail:'jobs@mysleepscoring.com',notes:'Email sent 10/28. Posted 2-year scoring requirement; asked about PRN/training exception.'},
+  {person:'Mike',company:'Persante Health Care',title:'Scoring Specialist - Maryland',reqId:'',location:'Salisbury, MD - remote/contract',url:'https://www.thejobsmap.com/job/50c7b9cd-d814-4e51-bb28-fd7dbc3d5433',source:'TheJobsMap',payRange:'$5-$30/study',targetPay:'$60K equivalent',fit:7,status:'interested',appliedDate:'',followUp:'2026-11-03',notes:'Live 10/28. 1099/per-study; requires active MD RPSGT license and scoring experience. Apply on Persante site.'},
+  /* ---- Mike: expired / not eligible ---- */
+  {person:'Mike',company:'Munson Healthcare',title:'Registered Sleep Tech - PRN Remote',reqId:'',location:'Remote',url:'https://jobs.smartrecruiters.com/MunsonHealthcare1/3743990015261833-registered-sleep-tech-sleep-center',source:'SmartRecruiters',payRange:'$28K-$52K',targetPay:'$60K',fit:7,status:'skipped',appliedDate:'',followUp:'',notes:'Expired 10/29/26. No minimum years listed; RPSGT preferred.'},
+  {person:'Mike',company:'BetterNight / Sleep Data',title:'RPSGT - Day Shift',reqId:'4561890',location:'Remote - PST day shift',url:'https://recruiting.paylocity.com/Recruiting/Jobs/Details/4561890',source:'Paylocity',payRange:'$30-$36/hr',targetPay:'$65K',fit:7,status:'skipped',appliedDate:'',followUp:'',notes:'Expired 10/29/26. Required 1+ year sleep industry; full-time PST.'},
+  {person:'Mike',company:'Braebon Medical',title:'RPSGT - Remote Scoring (NY)',reqId:'',location:'Remote - NY only',url:'https://www2.braebon.com/corporate/positions',source:'LinkedIn',payRange:'Not posted',targetPay:'$60K',fit:6,status:'skipped',appliedDate:'',followUp:'',notes:'Closed; required NY license and scoring experience.'},
+  {person:'Mike',company:'Air Liquide Healthcare',title:'Sleep Scorer - Part-Time',reqId:'',location:'Remote - Australia only',url:'https://movetomore.com.au/job/c8212dce-bd24-4aa9-904f-776c0c959413/',source:'Regional Jobs',payRange:'Not posted',targetPay:'$60K',fit:6,status:'skipped',appliedDate:'',followUp:'',notes:'Closed 9/6/26; 19 hrs/week; Australia work rights required.'},
+  {person:'Mike',company:'Onera Health',title:'Freelance Sleep Tech / Scorer (EU)',reqId:'',location:'Remote - EU only',url:'https://meetfrank.com/jobs/onera-health/freelance-sleep-tech-scorer-eu-remote',source:'MeetFrank',payRange:'Not posted',targetPay:'$60K',fit:5,status:'skipped',appliedDate:'',followUp:'',notes:'Closed; EU-based; 5+ years scoring required.'},
+  {person:'Mike',company:'Athena East',title:'Sleep Study Scoring Specialist',reqId:'',location:'Remote - Philippines only',url:'https://www.linkedin.com/posts/athenaeast_hiringnow-rpsgt-sleeptechnologist-activity-7519400075576602624-MpHV',source:'LinkedIn',payRange:'Not posted',targetPay:'$60K',fit:5,status:'skipped',appliedDate:'',followUp:'',notes:'Philippines-based applicants only; part-time/as-needed.'},
+  {person:'Mike',company:'Neurocare',title:'Remote Sleep Study Scoring',reqId:'',location:'Remote - select states',url:'https://www.flexjobs.com/gjw/neurocare_inc/sleep-study-scoring-position/publicjobs?id=1d7a5fb8-8746-46ec-9118-9e2332ce8635',source:'FlexJobs',payRange:'$30/in-lab, $10/HST',targetPay:'$60K',fit:6,status:'skipped',appliedDate:'',followUp:'',notes:'States exclude Maryland; per diem.'},
+  {person:'Mike',company:'Beacon Biosignals',title:'Sleep Scoring Technologist - PRN',reqId:'4444850009',location:'Remote - DC/LA/DE license',url:'https://job-boards.greenhouse.io/beaconbiosignals/jobs/4444850009',source:'Greenhouse',payRange:'Not posted',targetPay:'$65K',fit:6,status:'skipped',appliedDate:'',followUp:'',notes:'Requires 5 years in-lab RPSGT + 1-2 years HST plus DC/LA/DE license.'},
+  {person:'Mike',company:'MedBridge / Pivotal Health',title:'Remote Scoring - PRN - Maryland',reqId:'',location:'Remote - MD',url:'https://medbridgehealthcare.com/open-positions/co/clinical-support/EC.C6A/remote-scoring-prn-maryland-region/all/',source:'MedBridge',payRange:'Not posted',targetPay:'$60K',fit:7,status:'skipped',appliedDate:'',followUp:'',notes:'Requires 2 years scoring + 2 years HST; revisit after experience.'},
+  {person:'Mike',company:'Sleep Doctor',title:'Sr. Scoring Technician',reqId:'7833572003',location:'Remote',url:'https://job-boards.greenhouse.io/sleepdoctor/jobs/7833572003',source:'Greenhouse',payRange:'$32-$37/hr',targetPay:'$70K',fit:6,status:'skipped',appliedDate:'',followUp:'',notes:'Requires 5-8 years scoring; full-time.'},
+  {person:'Mike',company:'Clinilabs',title:'Data Processor - Per Diem',reqId:'4511611',location:'Remote',url:'https://recruiting.paylocity.com/Recruiting/Jobs/Details/4511611',source:'Paylocity',payRange:'$35/hr training',targetPay:'$60K',fit:6,status:'skipped',appliedDate:'',followUp:'',notes:'Requires 5 years prior scoring.'},
+  {person:'Mike',company:'Sleep Strategies',title:'RPSGT Sleep Scoring Technologist',reqId:'',location:'Remote / Canada',url:'https://sleepstrategies.com/careers/',source:'Company site',payRange:'Not posted',targetPay:'$60K',fit:6,status:'skipped',appliedDate:'',followUp:'',notes:'Requires 5 years in a sleep center; 98% of scorers have 10+ years.'}
 ];
 
 const LSKEY='jobs_v1';
 let jobs=[];
+function keyOf(j){return (j.person||'Avery')+'|'+String(j.company||'').toLowerCase()+'|'+String(j.title||'').toLowerCase()+'|'+String(j.reqId||'').toLowerCase();}
 function load(){
-  try{const raw=localStorage.getItem(LSKEY);if(raw){jobs=JSON.parse(raw);return;}}catch(e){}
-  jobs=SEED.map((j,i)=>({id:'seed'+i,...j}));
-  save();
+  let stored=[];
+  try{const raw=localStorage.getItem(LSKEY);if(raw)stored=JSON.parse(raw);}catch(e){}
+  if(!Array.isArray(stored))stored=[];
+  const seeded=SEED.map((j,i)=>({id:'seed'+i,...j}));
+  if(!stored.length){jobs=seeded;save();return;}
+  const seen=new Set(stored.map(keyOf));
+  let added=0;
+  seeded.forEach(j=>{if(!seen.has(keyOf(j))){stored.push(j);seen.add(keyOf(j));added++;}});
+  jobs=stored;
+  if(added)save();
 }
 function save(){try{localStorage.setItem(LSKEY,JSON.stringify(jobs));}catch(e){}}
 function uid(){return 'j'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
@@ -162,17 +203,37 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function fmtD(d){if(!d)return '';const p=String(d).split('-');return p.length===3?p[1]+'/'+p[2]+'/'+p[0].slice(2):d;}
 function today(){const d=new Date();return d.toISOString().slice(0,10);}
 
-let person='All', statusF='', sortBy='applied', q='';
+let person='All', statusF='', sortBy='applied', sortDir='desc', q='';
+function parsePay(j){
+  const s=String(j.payRange||'').replace(/,/g,'');
+  const k=[...s.matchAll(/\$?\s*(\d+(?:\.\d+)?)\s*[kK]\b/g)].map(m=>+m[1]*1000);
+  if(k.length){const a=k.slice(0,2);return (a[0]+(a[1]??a[0]))/2;}
+  const h=[...s.matchAll(/\$?\s*(\d+(?:\.\d+)?)\s*(?:\/hr|per hour|hour)/gi)].map(m=>+m[1]);
+  if(h.length){const a=h.slice(0,2);return ((a[0]+(a[1]??a[0]))/2)*2080;}
+  const n=[...s.matchAll(/\$?\s*(\d{2,3}(?:,\d{3})+|\d{4,})/g)].map(m=>+m[1].replace(/,/g,''));
+  if(n.length>=2)return (n[0]+n[1])/2;
+  if(n.length===1)return n[0];
+  return null;
+}
+function cmpDate(a,b){if(!a&&!b)return 0;if(!a)return 1;if(!b)return -1;return String(a).localeCompare(String(b));}
 function filtered(){
   let a=jobs.slice();
   if(person!=='All')a=a.filter(j=>j.person===person);
   if(statusF)a=a.filter(j=>j.status===statusF);
   if(q){const s=q.toLowerCase();a=a.filter(j=>(j.company+' '+j.title+' '+j.notes+' '+(j.location||'')).toLowerCase().includes(s));}
-  if(sortBy==='applied')a.sort((x,y)=>String(y.appliedDate||'').localeCompare(String(x.appliedDate||''))||String(y.updatedAt||'').localeCompare(String(x.updatedAt||'')));
-  else if(sortBy==='followup')a.sort((x,y)=>String(x.followUp||'9999').localeCompare(String(y.followUp||'9999')));
-  else if(sortBy==='fit')a.sort((x,y)=>((y.fit||0)-(x.fit||0)));
-  else a.sort((x,y)=>String(y.updatedAt||'').localeCompare(String(x.updatedAt||'')));
+  const dir=sortDir==='asc'?1:-1;
+  if(sortBy==='applied')a.sort((x,y)=>{const bx=x.appliedDate?0:1,by=y.appliedDate?0:1;if(bx!==by)return bx-by;return dir*cmpDate(x.appliedDate,y.appliedDate);});
+  else if(sortBy==='pay')a.sort((x,y)=>{const px=parsePay(x),py=parsePay(y);if(px==null&&py==null)return 0;if(px==null)return 1;if(py==null)return -1;return dir*(px-py);});
+  else if(sortBy==='fit')a.sort((x,y)=>{const fx=x.fit==null?null:+x.fit,fy=y.fit==null?null:+y.fit;if(fx==null&&fy==null)return 0;if(fx==null)return 1;if(fy==null)return -1;return dir*(fx-fy);});
+  else if(sortBy==='followup')a.sort((x,y)=>{const bx=x.followUp?0:1,by=y.followUp?0:1;if(bx!==by)return bx-by;return dir*cmpDate(x.followUp,y.followUp);});
+  else a.sort((x,y)=>dir*cmpDate(x.updatedAt,y.updatedAt));
   return a;
+}
+function syncSortSelect(){const el=document.getElementById('fSort');if(!el)return;const v=sortBy+':'+sortDir;if([...el.options].some(o=>o.value===v))el.value=v;}
+function sortHeader(key){
+  if(sortBy===key)sortDir=sortDir==='asc'?'desc':'asc';
+  else{sortBy=key;sortDir='desc';}
+  syncSortSelect();render();
 }
 function kpis(){
   const a=filtered();const c=s=>a.filter(j=>j.status===s).length;
@@ -200,7 +261,13 @@ function render(){
   });
   // table
   const tbl=document.getElementById('tbl');
-  let h='<tr><th>Person</th><th>Company / role</th><th>Status</th><th>Applied</th><th>Pay range</th><th class="num">Fit</th><th>Contact</th><th>Follow-up</th><th></th></tr>';
+  const arrow=k=>sortBy===k?(sortDir==='asc'?'&#9650;':'&#9660;'):'&#8597;';
+  const cls=k=>'sortable'+(sortBy===k?' active':'');
+  let h='<tr><th>Person</th><th>Company / role</th><th>Status</th>'+
+    '<th class="'+cls('applied')+'" onclick="sortHeader(\'applied\')" title="Sort by applied date">Applied <span class="arrow">'+arrow('applied')+'</span></th>'+
+    '<th class="'+cls('pay')+'" onclick="sortHeader(\'pay\')" title="Sort by pay range midpoint">Pay range <span class="arrow">'+arrow('pay')+'</span></th>'+
+    '<th class="num '+cls('fit')+'" onclick="sortHeader(\'fit\')" title="Sort by fit score">Fit <span class="arrow">'+arrow('fit')+'</span></th>'+
+    '<th>Contact</th><th>Follow-up</th><th></th></tr>';
   filtered().forEach(j=>{
     const link=j.url?'<a href="'+esc(j.url)+'" target="_blank" rel="noopener">'+esc(j.company)+'</a>':'<b>'+esc(j.company)+'</b>';
     const st=j.status||'found';
@@ -277,10 +344,10 @@ function importJson(){
         let added=0;
         data.forEach(o=>{
           if(!o||!o.company&&!o.title)return;
-          const key=(o.person||'Avery')+'|'+String(o.company||'').toLowerCase()+'|'+String(o.title||'').toLowerCase();
-          const exists=jobs.some(j=>((j.person||'Avery')+'|'+String(j.company||'').toLowerCase()+'|'+String(j.title||'').toLowerCase())===key);
+          const key=keyOf(o);
+          const exists=jobs.some(j=>keyOf(j)===key);
           if(exists)return;
-          jobs.push({id:uid(),person:o.person||'Avery',status:o.status||'found',company:o.company||'',title:o.title||'',
+          jobs.push({id:uid(),person:o.person||'Avery',status:String(o.status||'found').toLowerCase(),company:o.company||'',title:o.title||'',
             reqId:o.reqId||'',location:o.location||'',url:o.url||'',source:o.source||'AI import',payRange:o.payRange||'',
             targetPay:o.targetPay||'',fit:o.fit!=null?o.fit:null,appliedDate:o.appliedDate||'',followUp:o.followUp||'',
             contactName:o.contactName||'',contactEmail:o.contactEmail||'',contactPhone:o.contactPhone||'',
@@ -307,8 +374,9 @@ function exportCsv(){
   download('jobs-export-'+today()+'.csv',lines.join('\r\n'),'text/csv');
 }
 document.getElementById('fStatus').onchange=e=>{statusF=e.target.value;render();};
-document.getElementById('fSort').onchange=e=>{sortBy=e.target.value;render();};
+document.getElementById('fSort').onchange=e=>{const [k,d]=e.target.value.split(':');sortBy=k;sortDir=d||'desc';render();};
 document.getElementById('fQ').oninput=e=>{q=e.target.value;render();};
+syncSortSelect();
 load();render();
 </script>
 </body>
