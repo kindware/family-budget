@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Tracker - Mike &amp; Avery</title>
+<style>
+:root{--navy:#1F3864;--blue:#4472C4;--green:#2E7D32;--red:#C62828;--amber:#B26A00;--gray:#667;--bg:#f4f6fb;--card:#fff;--line:#dde3ef}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:#222}
+header{background:var(--navy);color:#fff;padding:20px 26px 16px;position:relative}
+header h1{margin:0;font-size:22px}
+header p{margin:5px 0 0;font-size:12.5px;color:#c9d4ea}
+.wrap{max-width:1280px;margin:0 auto;padding:18px}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.pillbtn{border:0;border-radius:7px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;background:#fff;border:1px solid var(--line);color:var(--navy)}
+.pillbtn.primary{background:var(--navy);color:#fff;border:0}
+.pillbtn.green{background:var(--green);color:#fff;border:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-weight:600;color:#445}
+.chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray);font-weight:700}
+.card .val{font-size:22px;font-weight:800;color:var(--navy);margin-top:3px}
+.card .sub{font-size:11px;color:var(--gray);margin-top:2px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.nextbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.action{background:#fff8e6;border:1px solid #f0dfa8;border-radius:8px;padding:8px 12px;font-size:12.5px;color:#7a5b00}
+.action.hot{background:#fdecec;border-color:#f3c1c1;color:var(--red)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{background:var(--navy);color:#fff;text-align:left;padding:7px 8px;font-weight:600;position:sticky;top:0;z-index:2;white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid #eef1f7;vertical-align:top}
+tr:nth-child(even) td{background:#f8fAfd}
+td a{color:var(--blue);text-decoration:none;font-weight:600}
+td a:hover{text-decoration:underline}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-block;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-found{background:#eef2fa;color:#445}
+.b-interested{background:#e3ecfb;color:var(--blue)}
+.b-applied{background:#fff3dc;color:var(--amber)}
+.b-interview{background:#e7f4e7;color:var(--green)}
+.b-offer{background:#2E7D32;color:#fff}
+.b-rejected{background:#f2f2f2;color:#999}
+.b-skipped{background:#f2f2f2;color:#999}
+select.status{border:1px solid var(--line);border-radius:6px;padding:3px 6px;font-size:11.5px;background:#fff;cursor:pointer}
+.mini{font-size:11px;color:var(--gray)}
+.fit{font-weight:800}
+.fit.hi{color:var(--green)}.fit.mid{color:var(--amber)}.fit.lo{color:#999}
+.rowbtns{white-space:nowrap}
+.rowbtns button{border:0;background:none;cursor:pointer;font-size:14px;padding:2px 5px;border-radius:4px}
+.rowbtns button:hover{background:#eef2fa}
+/* modal */
+#modal{position:fixed;inset:0;background:rgba(15,25,45,.55);display:none;align-items:flex-start;justify-content:center;z-index:100;overflow:auto;padding:30px 12px}
+#modal.open{display:flex}
+.modalcard{background:#fff;border-radius:12px;width:min(760px,96vw);padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modalcard h2{margin:0 0 12px;font-size:17px;color:var(--navy)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fgrid .f{display:flex;flex-direction:column;gap:3px}
+.fgrid .f.full{grid-column:1/-1}
+.fgrid label{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:#889;font-weight:700}
+.fgrid input,.fgrid select,.fgrid textarea{padding:8px 9px;border:1px solid var(--line);border-radius:7px;font-size:13px;font-family:inherit;width:100%}
+.fgrid textarea{min-height:64px;resize:vertical}
+@media(max-width:760px){.fgrid{grid-template-columns:1fr}table{display:none}.mobilecard{display:block;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}}
+.mobilecard{display:none}
+.mobilecard .mc-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.mobilecard .mc-title{font-weight:800;color:var(--navy)}
+footer{max-width:1280px;margin:20px auto 40px;padding:0 18px;font-size:11.5px;color:var(--gray)}
+.hint{font-size:11.5px;color:var(--gray);margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Job Tracker &mdash; Mike &amp; Avery</h1>
+  <p>Every lead, application, contact, pay band and follow-up in one place &middot; synced with the job-hunt AI via JSON import</p>
+</header>
+<div class="wrap">
+  <div class="toolbar">
+    <button class="pillbtn primary" onclick="openEdit()">+ Add job</button>
+    <div class="chips" id="personChips"></div>
+    <select id="fStatus" class="pillbtn" style="padding:8px 10px"><option value="">All statuses</option><option value="found">Found</option><option value="interested">Interested</option><option value="applied">Applied</option><option value="interview">Interview</option><option value="offer">Offer</option><option value="rejected">Rejected</option><option value="skipped">Skipped</option></select>
+    <select id="fSort" class="pillbtn" style="padding:8px 10px"><option value="applied">Sort: newest applied</option><option value="followup">Sort: follow-up due</option><option value="fit">Sort: best fit</option><option value="updated">Sort: recently updated</option></select>
+    <input id="fQ" class="pillbtn" style="padding:8px 12px;min-width:190px" placeholder="Search company, title, notes...">
+    <span style="flex:1"></span>
+    <button class="pillbtn" onclick="importJson()">Import AI JSON</button>
+    <button class="pillbtn" onclick="exportJson()">Export JSON</button>
+    <button class="pillbtn" onclick="exportCsv()">Export CSV</button>
+  </div>
+
+  <div class="cards" id="kpis"></div>
+  <div class="nextbar" id="nextbar"></div>
+
+  <div class="panel" style="padding:0;overflow:auto">
+    <table id="tbl"></table>
+    <div id="mobileList"></div>
+  </div>
+  <p class="hint">Status changes save instantly on this device. Use <b>Export JSON</b> to hand data to the job-hunt AI, or <b>Import AI JSON</b> to pull in new listings (format: array of {company,title,url,location,payRange,person,status,source,notes,reqId,fit}).</p>
+</div>
+<footer>Job Tracker v1 &middot; data stays in this browser (localStorage) &middot; export to back up or sync &middot; deployed with the family site</footer>
+
+<div id="modal">
+  <div class="modalcard">
+    <h2 id="mTitle">Add job</h2>
+    <div class="fgrid">
+      <div class="f"><label>Person</label><select id="mPerson"><option>Avery</option><option>Mike</option></select></div>
+      <div class="f"><label>Status</label><select id="mStatus"><option value="found">Found</option><option value="interested">Interested</option><option value="applied">Applied</option><option value="interview">Interview</option><option value="offer">Offer</option><option value="rejected">Rejected</option><option value="skipped">Skipped</option></select></div>
+      <div class="f"><label>Company</label><input id="mCompany" placeholder="Catalent"></div>
+      <div class="f"><label>Title</label><input id="mTitle2" placeholder="Metrologist (R925225)"></div>
+      <div class="f"><label>Req ID</label><input id="mReq" placeholder="R925225"></div>
+      <div class="f"><label>Location / commute</label><input id="mLoc" placeholder="Harmans, MD - ~15 min"></div>
+      <div class="f full"><label>Job URL (hyperlink)</label><input id="mUrl" placeholder="https://..."></div>
+      <div class="f"><label>Source</label><input id="mSource" placeholder="LinkedIn / Indeed / Company site"></div>
+      <div class="f"><label>Pay range</label><input id="mPay" placeholder="$40.86-$48.07/hr ($85.0K-$100.0K)"></div>
+      <div class="f"><label>Your target</label><input id="mTarget" placeholder="$44-$46/hr"></div>
+      <div class="f"><label>Fit (1-10)</label><input id="mFit" type="number" min="0" max="10" step="0.5" placeholder="9"></div>
+      <div class="f"><label>Applied date</label><input id="mApplied" type="date"></div>
+      <div class="f"><label>Follow-up due</label><input id="mFollow" type="date"></div>
+      <div class="f"><label>Contact name</label><input id="mCName" placeholder="Recruiter name"></div>
+      <div class="f"><label>Contact email</label><input id="mCEmail" placeholder="name@company.com"></div>
+      <div class="f"><label>Contact phone</label><input id="mCPhone" placeholder="(410) ..."></div>
+      <div class="f full"><label>Full package / benefits notes</label><textarea id="mPackage" placeholder="401k match, PTO, bonus, sign-on, shift diff, benefits start..."></textarea></div>
+      <div class="f full"><label>Notes (why fit / gaps / interview intel)</label><textarea id="mNotes"></textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="pillbtn green" onclick="saveJob()">Save</button>
+      <button class="pillbtn" onclick="closeEdit()">Cancel</button>
+      <span style="flex:1"></span>
+      <button class="pillbtn" id="mDelete" style="color:var(--red)" onclick="deleteJob()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SEED = [
+ /* ---- Avery: APPLIED (from the 10/28 call sheet) ---- */
+ {person:'Avery',company:'Catalent',title:'Metrologist (R925225)',reqId:'R925225',location:'Harmans, MD - ~15 min',url:'https://careers.catalent.com/',source:'Company site',payRange:'$40.86-$48.07/hr ($85.0K-$100.0K)',targetPay:'$44-$46/hr',fit:9,status:'applied',appliedDate:'2026-10-20',notes:'BEST PURE FIT. Owns calibration (XRD, XRF, TGA, Mastersizer, Instron), PM, troubleshooting, GMP records. Gap: pharma CMMS (Blue Mountain). Do not accept below $41.50/hr.',package:'Ask: shift, OT, on-call pay, CMMS, calibration schedule, sign-on, benefits start.'},
+ {person:'Avery',company:'Catalent',title:'Scientist, QC Analytical (0097274)',reqId:'0097274',location:'Harmans, MD - ~15 min',url:'https://careers.catalent.com/',source:'Company site',payRange:'$38.46-$48.07/hr ($80.0K-$100.0K)',targetPay:'$42-$45/hr',fit:7,status:'applied',appliedDate:'2026-10-20',notes:'Good but assay gap (ELISA/qPCR vs XRD/XRF). Do not accept below $39.50/hr.',package:'Ask: which assays, training plan, shift, OT, sign-on.'},
+ {person:'Avery',company:'Northrop Grumman',title:'U107 Dimensional Calibration Technician (R10254465)',reqId:'R10254465',location:'Linthicum, MD - ~15-20 min',url:'https://www.northropgrumman.com/careers',source:'Company site',payRange:'Not posted (likely $60K-$90K)',targetPay:'$81.4K min; ask $85K',fit:6.5,status:'applied',appliedDate:'2026-10-24',notes:'Union role; grade/step may control pay. Dimensional/gage calibration is the gap. Verify grade/step + shift diff before investing.',package:'Ask: grade/step, shift differential, OT, benefits.'},
+ {person:'Avery',company:'BD',title:'Quality Engineer II, Liquid Media (R-555805)',reqId:'R-555805',location:'Hunt Valley, MD - ~25-30 min',url:'https://jobs.bd.com/',source:'Company site',payRange:'$75,800-$121,300',targetPay:'$90K-$95K',fit:8,status:'applied',appliedDate:'2026-10-27',notes:'BEST STEP-UP. Applied at $85K = minimum, not target. BS Biology + 9 yrs. Gap: no formal QE title, no ISO 13485/FDA 820, no SPC.',package:'Ask: shift, bonus, sign-on, PTO, benefits start, 401k match, tuition.'},
+ {person:'Avery',company:'BD',title:'Quality Engineer II, Instrument Plant (R-557882)',reqId:'R-557882',location:'Sparks, MD - ~30-35 min',url:'https://jobs.bd.com/',source:'Company site',payRange:'$75,800-$121,300',targetPay:'$90K-$92K (stretch $95K)',fit:7.5,status:'applied',appliedDate:'2026-10-27',notes:'Second BD shot. Applied $85K. Gaps: SAP, medical-device regs, CAPA ownership, stats.',package:'If base fixed: ask sign-on, extra PTO, or 6-month review.'},
+ {person:'Avery',company:'L3Harris',title:'Specialist Quality Engineer (46398)',reqId:'46398',location:'Hanover, MD - ~15-20 min',url:'https://careers.l3harris.com/',source:'Company site',payRange:'$73,000-$135,000',targetPay:'$95K-$105K',fit:7,status:'applied',appliedDate:'2026-10-28',notes:'Applied at $95K. 9/80 schedule = every other Friday off (major QoL win - confirm). Gaps: AS9100, supplier quality, clearance.',package:'Ask: shift, 9/80, clearance timeline, bonus, sign-on, benefits, 401k match.'},
+ {person:'Avery',company:'BD',title:'Sr. Quality Systems Specialist - Industrial Affairs (R-556299)',reqId:'R-556299',location:'Sparks, MD - ~30-35 min',url:'https://jobs.bd.com/',source:'Company site',payRange:'$95,900-$153,400',targetPay:'$105K-$115K',fit:7.5,status:'applied',appliedDate:'2026-10-28',notes:'Highest posted BD range. Applied at $105K. Gaps: full QS ownership, ISO 13485/FDA 820, EDQM/TSE, SAP.',package:'Ask: shift, 4-day in-office, bonus, sign-on, benefits start, training on BD systems.'},
+ /* ---- Avery: FOUND (June 2026 verified batch - re-verify before applying) ---- */
+ {person:'Avery',company:'W.L. Gore & Associates',title:'Quality Control Testing',reqId:'Req 1771',location:'Elkton, MD (55 miles)',url:'https://www.gore.com/careers',source:'Company site',payRange:'$30-$38/hr + $2/hr shift diff',targetPay:'$38-42/hr',fit:8,status:'skipped',notes:'June 2026 batch - posting closed 6/22. Re-check careers page. Day shift.'},
+ {person:'Avery',company:'Eurofins PSS',title:'QC Scientist, Raw Materials',reqId:'',location:'Gaithersburg, MD (42 miles)',url:'https://jobs.smartrecruiters.com/Eurofins/744000125886419-qc-scientist-raw-materials',source:'SmartRecruiters',payRange:'$31-$40/hr ($64K-$83K)',targetPay:'$38-42/hr',fit:8,status:'found',notes:'June 2026 batch - verify still open. HPLC/GC/FTIR compendial methods.'},
+ {person:'Avery',company:'PII / Jabil',title:'Chemist',reqId:'',location:'Hunt Valley, MD (25 miles)',url:'https://careers.jabil.com/',source:'LinkedIn/Indeed',payRange:'$70,242-$123,800',targetPay:'$85K-$90K',fit:8,status:'found',notes:'June 2026 batch - verify still open. Pay floor is an $8K raise.'},
+ {person:'Avery',company:'Bora Pharmaceutical',title:'QC Microbiology Analyst I',reqId:'',location:'Baltimore, MD - Camden (8 miles)',url:'',source:'Glassdoor/LinkedIn',payRange:'$60,000-$75,000',targetPay:'$70-75K (push Analyst II)',fit:7,status:'found',notes:'June 2026 batch - verify. BS Biology perfect match; overqualified on paper.'},
+ {person:'Avery',company:'Patient First',title:'Medical Technologist / MLT',reqId:'',location:'Towson, MD (15 miles)',url:'',source:'Indeed',payRange:'$31.50-$35.50/hr',targetPay:'$35-37/hr',fit:6,status:'found',notes:'June 2026 batch - verify. ASCP preferred not required.'},
+ {person:'Avery',company:'GSK',title:'Process & Analytical Sciences Lab Technician',reqId:'',location:'Rockville, MD (38 miles)',url:'https://www.gsk.com/en-gb/careers/',source:'Company site',payRange:'$86,625-$144,375 + bonus + stock',targetPay:'$90-100K',fit:7.5,status:'found',notes:'June 2026 batch - verify. Big pharma; midpoint nearly doubles current pay.'}
+];
+
+const LSKEY='jobs_v1';
+let jobs=[];
+function load(){
+  try{const raw=localStorage.getItem(LSKEY);if(raw){jobs=JSON.parse(raw);return;}}catch(e){}
+  jobs=SEED.map((j,i)=>({id:'seed'+i,...j}));
+  save();
+}
+function save(){try{localStorage.setItem(LSKEY,JSON.stringify(jobs));}catch(e){}}
+function uid(){return 'j'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtD(d){if(!d)return '';const p=String(d).split('-');return p.length===3?p[1]+'/'+p[2]+'/'+p[0].slice(2):d;}
+function today(){const d=new Date();return d.toISOString().slice(0,10);}
+
+let person='All', statusF='', sortBy='applied', q='';
+function filtered(){
+  let a=jobs.slice();
+  if(person!=='All')a=a.filter(j=>j.person===person);
+  if(statusF)a=a.filter(j=>j.status===statusF);
+  if(q){const s=q.toLowerCase();a=a.filter(j=>(j.company+' '+j.title+' '+j.notes+' '+(j.location||'')).toLowerCase().includes(s));}
+  if(sortBy==='applied')a.sort((x,y)=>String(y.appliedDate||'').localeCompare(String(x.appliedDate||''))||String(y.updatedAt||'').localeCompare(String(x.updatedAt||'')));
+  else if(sortBy==='followup')a.sort((x,y)=>String(x.followUp||'9999').localeCompare(String(y.followUp||'9999')));
+  else if(sortBy==='fit')a.sort((x,y)=>((y.fit||0)-(x.fit||0)));
+  else a.sort((x,y)=>String(y.updatedAt||'').localeCompare(String(x.updatedAt||'')));
+  return a;
+}
+function kpis(){
+  const a=filtered();const c=s=>a.filter(j=>j.status===s).length;
+  const inproc=c('applied')+c('interview');
+  const offers=c('offer');
+  return [['Open leads',c('found')+c('interested'),'found + interested'],['Applied',c('applied'),'waiting'],['Interviews',c('interview'),'in process'],['Offers',offers,offers?'':'keep pushing'],['Total tracked',a.length,person==='All'?'both people':person]];
+}
+function render(){
+  const chips=['All','Avery','Mike'];
+  document.getElementById('personChips').innerHTML=chips.map(p=>'<button class="chip'+(person===p?' active':'')+'" onclick="setPerson(\''+p+'\')">'+p+'</button>').join('');
+  const k=document.getElementById('kpis');
+  k.innerHTML='';
+  kpis().forEach(c=>{const d=document.createElement('div');d.className='card';d.innerHTML='<div class="lbl">'+c[0]+'</div><div class="val">'+c[1]+'</div><div class="sub">'+c[2]+'</div>';k.appendChild(d);});
+  // next actions
+  const nb=document.getElementById('nextbar');nb.innerHTML='';
+  const t=today();
+  filtered().forEach(j=>{
+    if(j.followUp&&j.followUp<=t&&['applied','interview','interested'].includes(j.status)){
+      const d=document.createElement('div');d.className='action hot';d.innerHTML='<b>Follow up:</b> '+esc(j.company)+' - '+esc(j.title)+' (due '+fmtD(j.followUp)+')';
+      nb.appendChild(d);
+    }
+  });
+  filtered().slice(0,3).forEach(j=>{
+    if(j.status==='interview'){const d=document.createElement('div');d.className='action';d.innerHTML='<b>Interview:</b> '+esc(j.company)+' - '+esc(j.title);nb.appendChild(d);}
+  });
+  // table
+  const tbl=document.getElementById('tbl');
+  let h='<tr><th>Person</th><th>Company / role</th><th>Status</th><th>Applied</th><th>Pay range</th><th class="num">Fit</th><th>Contact</th><th>Follow-up</th><th></th></tr>';
+  filtered().forEach(j=>{
+    const link=j.url?'<a href="'+esc(j.url)+'" target="_blank" rel="noopener">'+esc(j.company)+'</a>':'<b>'+esc(j.company)+'</b>';
+    const st=j.status||'found';
+    const contact=(j.contactName?esc(j.contactName):'')+(j.contactEmail?'<br><a href="mailto:'+esc(j.contactEmail)+'">'+esc(j.contactEmail)+'</a>':'')+(j.contactPhone?'<br><span class="mini">'+esc(j.contactPhone)+'</span>':'');
+    const fit=j.fit!=null?'<span class="fit '+(j.fit>=8?'hi':(j.fit>=6?'mid':'lo'))+'">'+j.fit+'</span>':'';
+    h+='<tr><td>'+esc(j.person)+'</td><td>'+link+'<br><span class="mini">'+esc(j.title)+(j.reqId?' &middot; '+esc(j.reqId):'')+'</span><br><span class="mini">'+esc(j.location||'')+'</span></td>'+
+       '<td><select class="status" onchange="setStatus(\''+j.id+'\',this.value)">'+statusOpts(st)+'</select></td>'+
+       '<td>'+fmtD(j.appliedDate)+'</td><td>'+esc(j.payRange||'')+(j.targetPay?'<br><span class="mini">target: '+esc(j.targetPay)+'</span>':'')+'</td>'+
+       '<td class="num">'+fit+'</td><td>'+contact+'</td><td>'+fmtD(j.followUp)+'</td>'+
+       '<td class="rowbtns"><button title="Edit" onclick="openEdit(\''+j.id+'\')">&#9998;</button><button title="Delete" onclick="del(\''+j.id+'\')">&#128465;</button></td></tr>';
+  });
+  tbl.innerHTML=h;
+  // mobile cards
+  const ml=document.getElementById('mobileList');
+  ml.innerHTML=filtered().map(j=>{
+    const link=j.url?'<a href="'+esc(j.url)+'" target="_blank" rel="noopener">Open posting</a>':'';
+    return '<div class="mobilecard"><div class="mc-top"><div class="mc-title">'+esc(j.company)+'</div><span class="badge b-'+j.status+'">'+j.status+'</span></div>'+
+      '<div class="mini">'+esc(j.title)+' &middot; '+esc(j.person)+'</div>'+
+      '<div class="mini">'+esc(j.payRange||'')+(j.targetPay?' &middot; target '+esc(j.targetPay):'')+'</div>'+
+      '<div class="mini">'+fmtD(j.appliedDate)+(j.followUp?' &middot; follow-up '+fmtD(j.followUp):'')+'</div>'+
+      (j.contactEmail?'<div class="mini">'+esc(j.contactEmail)+'</div>':'')+
+      '<div style="margin-top:6px;display:flex;gap:10px">'+link+'<button class="pillbtn" onclick="openEdit(\''+j.id+'\')">Edit</button></div></div>';
+  }).join('');
+}
+function statusOpts(cur){
+  const S=[['found','Found'],['interested','Interested'],['applied','Applied'],['interview','Interview'],['offer','Offer'],['rejected','Rejected'],['skipped','Skipped']];
+  return S.map(s=>'<option value="'+s[0]+'"'+(cur===s[0]?' selected':'')+'>'+s[1]+'</option>').join('');
+}
+function setPerson(p){person=p;render();}
+function setStatus(id,v){const j=jobs.find(x=>x.id===id);if(!j)return;const was=j.status;j.status=v;j.updatedAt=new Date().toISOString();if(v==='applied'&&!j.appliedDate)j.appliedDate=today();save();render();}
+function del(id){if(!confirm('Delete this job?'))return;jobs=jobs.filter(x=>x.id!==id);save();render();}
+
+let editing=null;
+function openEdit(id){
+  editing=id||null;
+  const m=document.getElementById('modal');m.classList.add('open');
+  document.getElementById('mTitle').textContent=id?'Edit job':'Add job';
+  document.getElementById('mDelete').style.display=id?'':'none';
+  const j=id?jobs.find(x=>x.id===id):{person:person==='All'?'Avery':person,status:'found'};
+  const g=i=>document.getElementById(i);
+  g('mPerson').value=j.person||'Avery';g('mStatus').value=j.status||'found';
+  g('mCompany').value=j.company||'';g('mTitle2').value=j.title||'';g('mReq').value=j.reqId||'';
+  g('mLoc').value=j.location||'';g('mUrl').value=j.url||'';g('mSource').value=j.source||'';
+  g('mPay').value=j.payRange||'';g('mTarget').value=j.targetPay||'';g('mFit').value=j.fit!=null?j.fit:'';
+  g('mApplied').value=j.appliedDate||'';g('mFollow').value=j.followUp||'';
+  g('mCName').value=j.contactName||'';g('mCEmail').value=j.contactEmail||'';g('mCPhone').value=j.contactPhone||'';
+  g('mPackage').value=j.package||'';g('mNotes').value=j.notes||'';
+}
+function closeEdit(){document.getElementById('modal').classList.remove('open');editing=null;}
+function saveJob(){
+  const g=i=>document.getElementById(i).value.trim();
+  const obj={
+    id:editing||uid(),person:g('mPerson'),status:g('mStatus'),company:g('mCompany'),title:g('mTitle2'),
+    reqId:g('mReq'),location:g('mLoc'),url:g('mUrl'),source:g('mSource'),payRange:g('mPay'),targetPay:g('mTarget'),
+    fit:g('mFit')!==''?(+g('mFit')):null,appliedDate:g('mApplied'),followUp:g('mFollow'),
+    contactName:g('mCName'),contactEmail:g('mCEmail'),contactPhone:g('mCPhone'),
+    package:g('mPackage'),notes:g('mNotes'),updatedAt:new Date().toISOString()
+  };
+  if(!obj.company&&!obj.title){alert('Add at least a company or title.');return;}
+  if(editing){jobs=jobs.map(x=>x.id===editing?obj:x);}else{jobs.push(obj);}
+  save();closeEdit();render();
+}
+function deleteJob(){if(!editing)return;if(!confirm('Delete this job?'))return;jobs=jobs.filter(x=>x.id!==editing);save();closeEdit();render();}
+
+function importJson(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=()=>{
+    const f=inp.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        let data=JSON.parse(r.result);
+        if(!Array.isArray(data))data=[data];
+        let added=0;
+        data.forEach(o=>{
+          if(!o||!o.company&&!o.title)return;
+          const key=(o.person||'Avery')+'|'+String(o.company||'').toLowerCase()+'|'+String(o.title||'').toLowerCase();
+          const exists=jobs.some(j=>((j.person||'Avery')+'|'+String(j.company||'').toLowerCase()+'|'+String(j.title||'').toLowerCase())===key);
+          if(exists)return;
+          jobs.push({id:uid(),person:o.person||'Avery',status:o.status||'found',company:o.company||'',title:o.title||'',
+            reqId:o.reqId||'',location:o.location||'',url:o.url||'',source:o.source||'AI import',payRange:o.payRange||'',
+            targetPay:o.targetPay||'',fit:o.fit!=null?o.fit:null,appliedDate:o.appliedDate||'',followUp:o.followUp||'',
+            contactName:o.contactName||'',contactEmail:o.contactEmail||'',contactPhone:o.contactPhone||'',
+            package:o.package||'',notes:o.notes||'',updatedAt:new Date().toISOString()});
+          added++;
+        });
+        save();render();alert('Imported '+added+' new job(s).');
+      }catch(e){alert('Invalid JSON: '+e.message);}
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+function download(name,text,type){
+  const blob=new Blob([text],{type:type||'application/json'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);
+}
+function exportJson(){download('jobs-export-'+today()+'.json',JSON.stringify(jobs,null,2));}
+function exportCsv(){
+  const cols=['person','company','title','reqId','status','appliedDate','followUp','payRange','targetPay','fit','contactName','contactEmail','contactPhone','location','url','source','package','notes'];
+  const esc2=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const lines=[cols.join(',')].concat(jobs.map(j=>cols.map(c=>esc2(j[c])).join(',')));
+  download('jobs-export-'+today()+'.csv',lines.join('\r\n'),'text/csv');
+}
+document.getElementById('fStatus').onchange=e=>{statusF=e.target.value;render();};
+document.getElementById('fSort').onchange=e=>{sortBy=e.target.value;render();};
+document.getElementById('fQ').oninput=e=>{q=e.target.value;render();};
+load();render();
+</script>
+</body>
+</html>
